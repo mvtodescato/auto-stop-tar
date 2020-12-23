@@ -6,7 +6,8 @@ from sklearn.feature_extraction.text import ENGLISH_STOP_WORDS
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
-
+import numpy as np
+from scipy.sparse import csr_matrix
 from rank_bm25 import BM25Okapi
 from nltk.stem.porter import *
 porter_stemmer = PorterStemmer()
@@ -73,11 +74,32 @@ class Ranker(object):
     def set_did_2_feature(self, dids, texts, corpus_texts):
         tfidf_vectorizer = TfidfVectorizer(stop_words='english', min_df=int(self.min_df))
         tfidf_vectorizer.fit(corpus_texts)
-
+        print(tfidf_vectorizer)
         features = tfidf_vectorizer.transform(texts)
-        for did, feature in zip(dids, features):
+        matriz = csr_matrix((len(dids),107))
+        with open("teste.svm.fil", "r") as svm:
+            for line in svm:
+                new_line = line.split()
+                for var in new_line:
+                    if var == new_line[0]:
+                        x = var
+                        continue
+                    n_line = var.split(":")
+                    #print(x)
+                    #print(n_line[0])
+                    matriz[int(x),int(n_line[0])-1] = n_line[1]
+                    #print(n_line)
+            print(matriz[0])
+                
+        
+        #print(matriz)
+        #print(type(features))
+        #print(features[0])
+        #print(features[0,3])
+        for did, feature in zip(dids, matriz):
             self.did2feature[did] = feature
-
+            #print(did)
+        #print(self.did2feature)
         logging.info('Ranker.set_feature_dict is done.')
         return
 

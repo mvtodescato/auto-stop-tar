@@ -1,4 +1,4 @@
-# coding=utf-8
+#pyh# coding=utf-8
 
 """
 The implementation is based on
@@ -190,6 +190,7 @@ def scal_method(data_name, topic_set, topic_id,
     # rank complete dids
     train_dids, train_labels = datamanager.get_training_data(temp_doc_num=0)
     train_features = ranker.get_feature_by_did(train_dids)
+    print(train_features)
     ranker.train(train_features, train_labels)
 
     complete_features = ranker.get_feature_by_did(complete_dids)
@@ -213,9 +214,9 @@ def scal_method(data_name, topic_set, topic_id,
     return
 
 if __name__ == '__main__':
-    data_name = 'clef2017'
-    topic_id = 'CD008081'
-    topic_set = 'test'
+    data_name = 'android'
+    topic_id = '1'
+    topic_set = 'testando'
     query_file = os.path.join(PARENT_DIR, 'data', data_name, 'topics', topic_id)
     qrel_file = os.path.join(PARENT_DIR, 'data', data_name, 'qrels', topic_id)
     doc_id_file = os.path.join(PARENT_DIR, 'data', data_name, 'docids', topic_id)
