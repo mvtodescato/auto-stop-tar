@@ -71,11 +71,11 @@ class Ranker(object):
         else:
             raise NotImplementedError
 
-    def set_did_2_feature(self, dids, texts, corpus_texts):
+    def set_did_2_feature(self, dids):
         tfidf_vectorizer = TfidfVectorizer(stop_words='english', min_df=int(self.min_df))
-        tfidf_vectorizer.fit(corpus_texts)
-        print(tfidf_vectorizer)
-        features = tfidf_vectorizer.transform(texts)
+        #tfidf_vectorizer.fit(corpus_texts)
+        #print(tfidf_vectorizer)
+        #features = tfidf_vectorizer.transform(texts)
         matriz = csr_matrix((len(dids),107))
         with open("teste.svm.fil", "r") as svm:
             for line in svm:

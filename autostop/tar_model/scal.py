@@ -55,15 +55,15 @@ def scal_method(data_name, topic_set, topic_id,
     datamanager = Assessor(query_file, qrel_file, doc_id_file, doc_text_file)
     complete_dids = datamanager.get_complete_dids()
     complete_pseudo_dids = datamanager.get_complete_pseudo_dids()
-    complete_pseudo_texts = datamanager.get_complete_pseudo_texts()
-    corpus_texts = complete_pseudo_texts
+    print(complete_pseudo_dids)
+    #complete_pseudo_texts = datamanager.get_complete_pseudo_texts()
+    #corpus_texts = complete_pseudo_texts
     did2label = datamanager.get_did2label()
     total_true_r = datamanager.get_total_rel_num()
     total_num = datamanager.get_total_doc_num()
-
     # preparing document features
     ranker = Ranker()
-    ranker.set_did_2_feature(dids=complete_pseudo_dids, texts=complete_pseudo_texts, corpus_texts=complete_pseudo_texts)
+    ranker.set_did_2_feature(dids=complete_pseudo_dids)
     ranker.set_features_by_name('complete_dids', complete_dids)
 
     # SCAL sampler
