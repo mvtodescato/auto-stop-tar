@@ -55,7 +55,6 @@ def scal_method(data_name, topic_set, topic_id,
     datamanager = Assessor(query_file, qrel_file, doc_id_file, doc_text_file)
     complete_dids = datamanager.get_complete_dids()
     complete_pseudo_dids = datamanager.get_complete_pseudo_dids()
-    print(complete_pseudo_dids)
     #complete_pseudo_texts = datamanager.get_complete_pseudo_texts()
     #corpus_texts = complete_pseudo_texts
     did2label = datamanager.get_did2label()
@@ -190,7 +189,6 @@ def scal_method(data_name, topic_set, topic_id,
     # rank complete dids
     train_dids, train_labels = datamanager.get_training_data(temp_doc_num=0)
     train_features = ranker.get_feature_by_did(train_dids)
-    print(train_features)
     ranker.train(train_features, train_labels)
 
     complete_features = ranker.get_feature_by_did(complete_dids)
@@ -214,9 +212,9 @@ def scal_method(data_name, topic_set, topic_id,
     return
 
 if __name__ == '__main__':
-    data_name = 'android'
+    data_name = 'anttlr4'
     topic_id = '1'
-    topic_set = 'testando'
+    topic_set = 'testando2'
     query_file = os.path.join(PARENT_DIR, 'data', data_name, 'topics', topic_id)
     qrel_file = os.path.join(PARENT_DIR, 'data', data_name, 'qrels', topic_id)
     doc_id_file = os.path.join(PARENT_DIR, 'data', data_name, 'docids', topic_id)

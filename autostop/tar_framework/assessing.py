@@ -21,7 +21,13 @@ class DataLoader(object):
         self.dids = self.read_doc_ids(doc_id_file)
         self.did2text = self.read_doc_texts(doc_text_file)
 
-        self.pseudo_did = 'pseudo_did'
+        alldocs = self.get_did2label()
+        for id in alldocs:
+            if alldocs[id] == 1:
+                self.pseudo_did = id
+                break
+            else:
+                self.pseudo_did = '1'
         self.pseudo_text = self.title
         self.pseudo_label = REL
 
@@ -133,7 +139,6 @@ class Assessor(DataLoader):
 
         dids = [self.pseudo_did] + asdids + temp_dids
         labels = [self.pseudo_label] + [self.did2label[did] for did in asdids] + len(temp_dids)*[0]
-
         assert len(dids) == len(labels)
         return dids, labels
 
