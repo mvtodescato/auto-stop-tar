@@ -62,7 +62,7 @@ def scal_method(data_name, topic_set, topic_id,
     total_num = datamanager.get_total_doc_num()
     # preparing document features
     ranker = Ranker()
-    ranker.set_did_2_feature(dids=complete_pseudo_dids)
+    ranker.set_did_2_feature(dids=complete_pseudo_dids, data_name = data_name)
     ranker.set_features_by_name('complete_dids', complete_dids)
 
     # SCAL sampler
@@ -190,7 +190,6 @@ def scal_method(data_name, topic_set, topic_id,
     train_dids, train_labels = datamanager.get_training_data(temp_doc_num=0)
     train_features = ranker.get_feature_by_did(train_dids)
     ranker.train(train_features, train_labels)
-
     complete_features = ranker.get_feature_by_did(complete_dids)
     complete_scores = ranker.predict(complete_features)
     zipped = sorted(zip(complete_dids, complete_scores), key=itemgetter(1), reverse=True)

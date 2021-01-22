@@ -71,13 +71,14 @@ class Ranker(object):
         else:
             raise NotImplementedError
 
-    def set_did_2_feature(self, dids):
+    def set_did_2_feature(self, dids,data_name):
         tfidf_vectorizer = TfidfVectorizer(stop_words='english', min_df=int(self.min_df))
         #tfidf_vectorizer.fit(corpus_texts)
         #print(tfidf_vectorizer)
         #features = tfidf_vectorizer.transform(texts)
         matriz = csr_matrix((len(dids),107))
-        with open("teste.svm.fil", "r") as svm:
+        #modificar para pegar o nome do tópico aq e buscar diretamente na pasta de dados
+        with open("../../data/" + data_name + "/" + data_name + ".svm.fil", "r") as svm:
             for line in svm:
                 new_line = line.split()
                 for var in new_line:
@@ -89,7 +90,6 @@ class Ranker(object):
                     #print(n_line[0])
                     matriz[int(x),int(n_line[0])-1] = n_line[1]
                     #print(n_line)
-            print(matriz[0])
                 
         
         #print(matriz)
