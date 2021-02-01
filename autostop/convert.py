@@ -1,11 +1,11 @@
 import pandas as pd
-name = "teste"
-data = pd.read_csv('android_bugs.csv')
+name = "titan"
+data = pd.read_csv('titan.csv')
 x = data.iloc[:,:-1].values
 y = data.iloc[:,-1:].values
 convert = open("convert","w")
 jud = open("1", "w")
-docs = open("docids.txt", "w")
+docs = open("docid", "w")
 with open(name+".svm.fil", "w") as svm:
     for i in range(len(x)):
         #se quiser colocar o código do próprio documento é só modificar essas tres linhas abaixo e trocar o str(i) por str(x[i][0])
