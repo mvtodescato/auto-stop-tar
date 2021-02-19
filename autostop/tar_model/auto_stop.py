@@ -20,21 +20,20 @@ def autostop_method(data_name, topic_set, topic_id,
 
     np.random.seed(random_state)
 
-    # loading data
-    assessor = Assessor(query_file, qrel_file, doc_id_file, doc_text_file)
-    complete_dids = assessor.get_complete_dids()
-    complete_labels = assessor.get_complete_labels()
-    complete_pseudo_dids = assessor.get_complete_pseudo_dids()
-    complete_pseudo_texts = assessor.get_complete_pseudo_texts()
-    did2label = assessor.get_did2label()
-    total_true_r = assessor.get_total_rel_num()
-    total_num = assessor.get_total_doc_num()
-
+    datamanager = Assessor(query_file, qrel_file, doc_id_file, doc_text_file)
+    complete_dids = datamanager.get_complete_dids()
+    complete_pseudo_dids = datamanager.get_complete_pseudo_dids()
+    #complete_pseudo_texts = datamanager.get_complete_pseudo_texts()
+    #corpus_texts = complete_pseudo_texts
+    did2label = datamanager.get_did2label()
+    total_true_r = datamanager.get_total_rel_num()
+    total_num = datamanager.get_total_doc_num()
+    complete_labels = datamanager.get_complete_labels()
     # preparing document features
     ranker = Ranker()
-    ranker.set_did_2_feature(dids=complete_pseudo_dids, texts=complete_pseudo_texts, corpus_texts=complete_pseudo_texts)
+    ranker.set_did_2_feature(dids=complete_pseudo_dids, data_name = data_name)
     ranker.set_features_by_name('complete_dids', complete_dids)
-
+    # loading data
     # sampler
     model_name = 'autostop' +'-'
     model_name += 'sp' + str(stopping_percentage) + '-'
@@ -90,7 +89,7 @@ def autostop_method(data_name, topic_set, topic_id,
         csvwriter = csv.writer(f)
         while not stopping:
             t += 1
-            train_dids, train_labels = assessor.get_training_data(temp_doc_num)
+            train_dids, train_labels = datamanager.get_training_data(temp_doc_num)
             train_features = ranker.get_feature_by_did(train_dids)
             ranker.train(train_features, train_labels)
 
@@ -105,15 +104,15 @@ def autostop_method(data_name, topic_set, topic_id,
 
             sampled_dids = sampler.sample(t, ranked_dids, batch_size, stopping_condition)
 
-            assessor.update_assess(sampled_dids)
+            datamanager.update_assess(sampled_dids)
 
-            sampled_state = assessor.get_assessed_state()
+            sampled_state = datamanager.get_assessed_state()
 
             total_esti_r, var1, var2 = sampler.estimate(t, stopping_condition, sampled_state)
 
             # statistics
-            sampled_num = assessor.get_assessed_num()
-            running_true_r = assessor.get_assessed_rel_num()
+            sampled_num = datamanager.get_assessed_num()
+            running_true_r = datamanager.get_assessed_rel_num()
 
             if total_esti_r != 0:
                 running_esti_recall = running_true_r / float(total_esti_r)
@@ -156,13 +155,13 @@ def autostop_method(data_name, topic_set, topic_id,
                     stopping = True
 
     # writing
-    sampled_dids = assessor.get_assessed_dids()
+    sampled_dids = datamanager.get_assessed_dids()
     shown_features = ranker.get_feature_by_did(sampled_dids)
     shown_scores = ranker.predict(shown_features)
     zipped = sorted(zip(sampled_dids, shown_scores), key=itemgetter(1), reverse=True)
     shown_dids, scores = zip(*zipped)
 
-    check_func = assessor.assess_state_check_func()
+    check_func = datamanager.assess_state_check_func()
     tar_run_file = name_tar_run_file(data_name=data_name, model_name=model_name, topic_set=topic_set,
                                      exp_id=random_state, topic_id=topic_id)
     with open(tar_run_file, 'w', encoding='utf8') as f:
@@ -204,14 +203,14 @@ def autostop_for_large_collection(data_name, topic_set, topic_id,
     for query_file, qrel_file, doc_id_file, doc_text_file in zip(query_files, qrel_files, doc_id_files, doc_text_files):
 
         # loading data
-        assessor = Assessor(query_file, qrel_file, doc_id_file, doc_text_file)
-        complete_dids = assessor.get_complete_dids()
-        complete_labels = assessor.get_complete_labels()
-        complete_pseudo_dids = assessor.get_complete_pseudo_dids()
-        complete_pseudo_texts = assessor.get_complete_pseudo_texts()
-        did2label = assessor.get_did2label()
-        total_true_r = assessor.get_total_rel_num()
-        total_num = assessor.get_total_doc_num()
+        datamanager = datamanager(query_file, qrel_file, doc_id_file, doc_text_file)
+        complete_dids = datamanager.get_complete_dids()
+        complete_labels = datamanager.get_complete_labels()
+        complete_pseudo_dids = datamanager.get_complete_pseudo_dids()
+        complete_pseudo_texts = datamanager.get_complete_pseudo_texts()
+        did2label = datamanager.get_did2label()
+        total_true_r = datamanager.get_total_rel_num()
+        total_num = datamanager.get_total_doc_num()
 
         # ranker
         ranker = Ranker()
@@ -255,7 +254,7 @@ def autostop_for_large_collection(data_name, topic_set, topic_id,
 
         while not stopping:
             t += 1
-            train_dids, train_labels = assessor.get_training_data(temp_doc_num)
+            train_dids, train_labels = datamanager.get_training_data(temp_doc_num)
             train_features = ranker.get_feature_by_did(train_dids)
             ranker.train(train_features, train_labels)
 
@@ -269,14 +268,14 @@ def autostop_for_large_collection(data_name, topic_set, topic_id,
                 sampler.update_distribution(epsilon=epsilon, alpha=batch_size)
 
             sampled_dids = sampler.sample(t, ranked_dids, batch_size, stopping_condition)
-            assessor.update_assess(sampled_dids)
+            datamanager.update_assess(sampled_dids)
 
-            sampled_state = assessor.get_assessed_state()
+            sampled_state = datamanager.get_assessed_state()
             total_esti_r, var1, var2 = sampler.estimate(t, stopping_condition, sampled_state)
 
             # statistics
-            sampled_num = assessor.get_assessed_num()
-            running_true_r = assessor.get_assessed_rel_num()
+            sampled_num = datamanager.get_assessed_num()
+            running_true_r = datamanager.get_assessed_rel_num()
 
             if total_true_r != 0:
                 running_true_recall = running_true_r / float(total_true_r)
@@ -309,7 +308,7 @@ def autostop_for_large_collection(data_name, topic_set, topic_id,
                 if sampled_num >= int(total_num * stopping_percentage):
                     stopping = True
 
-        sampled_dids = assessor.get_assessed_dids()
+        sampled_dids = datamanager.get_assessed_dids()
         shown_features = ranker.get_feature_by_did(sampled_dids)
         shown_scores = ranker.predict(shown_features)
         zipped = sorted(zip(sampled_dids, shown_scores), key=itemgetter(1), reverse=True)
@@ -327,9 +326,9 @@ def autostop_for_large_collection(data_name, topic_set, topic_id,
     return
 
 if __name__ == '__main__':
-    data_name = 'clef2017'
-    topic_id = 'CD008081'
-    topic_set = 'test'
+    data_name = 'anttlr4'
+    topic_id = '1'
+    topic_set = 'testando2'
     query_file = os.path.join(PARENT_DIR, 'data', data_name, 'topics', topic_id)
     qrel_file = os.path.join(PARENT_DIR, 'data', data_name, 'qrels', topic_id)
     doc_id_file = os.path.join(PARENT_DIR, 'data', data_name, 'docids', topic_id)

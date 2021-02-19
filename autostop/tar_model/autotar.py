@@ -47,27 +47,18 @@ def autotar_method(data_name, topic_set, topic_id,
     LOGGER.info('Model configuration: {}.'.format(model_name))
 
     # loading data
-    assessor = Assessor(query_file, qrel_file, doc_id_file, doc_text_file)
-    complete_dids = assessor.get_complete_dids()
-    complete_pseudo_dids = assessor.get_complete_pseudo_dids()
-    complete_pseudo_texts = assessor.get_complete_pseudo_texts()
-
-    if ranker_tfidf_corpus_files == []:
-        corpus_texts = assessor.get_complete_pseudo_texts()
-    else:  # this branch is only available for autotar, to study the effect of ranker
-        def read_temp(files):
-            for file in files:
-                for text in DataLoader.read_doc_texts_2_list(file):
-                    yield text
-
-        corpus_texts = read_temp(ranker_tfidf_corpus_files)
-    did2label = assessor.get_did2label()
-    total_true_r = assessor.get_total_rel_num()
-    total_num = assessor.get_total_doc_num()
-
+    datamanager = Assessor(query_file, qrel_file, doc_id_file, doc_text_file)
+    complete_dids = datamanager.get_complete_dids()
+    complete_pseudo_dids = datamanager.get_complete_pseudo_dids()
+    #complete_pseudo_texts = datamanager.get_complete_pseudo_texts()
+    #corpus_texts = complete_pseudo_texts
+    did2label = datamanager.get_did2label()
+    total_true_r = datamanager.get_total_rel_num()
+    total_num = datamanager.get_total_doc_num()
+    complete_labels = datamanager.get_complete_labels()
     # preparing document features
-    ranker = Ranker(model_type=classifier, random_state=random_state, min_df=min_df, C=C)
-    ranker.set_did_2_feature(dids=complete_pseudo_dids, texts=complete_pseudo_texts, corpus_texts=corpus_texts)
+    ranker = Ranker()
+    ranker.set_did_2_feature(dids=complete_pseudo_dids, data_name = data_name)
     ranker.set_features_by_name('complete_dids', complete_dids)
 
     # local parameters are set according to [1]
@@ -82,7 +73,7 @@ def autotar_method(data_name, topic_set, topic_id,
         while not stopping:
             t += 1
 
-            train_dids, train_labels = assessor.get_training_data(temp_doc_num)
+            train_dids, train_labels = datamanager.get_training_data(temp_doc_num)
             train_features = ranker.get_feature_by_did(train_dids)
             ranker.train(train_features, train_labels)
 
@@ -93,12 +84,12 @@ def autotar_method(data_name, topic_set, topic_id,
             ranked_dids, scores = zip(*zipped)
 
             # cutting off instead of sampling
-            selected_dids = assessor.get_top_assessed_dids(ranked_dids, batch_size)
-            assessor.update_assess(selected_dids)
+            selected_dids = datamanager.get_top_assessed_dids(ranked_dids, batch_size)
+            datamanager.update_assess(selected_dids)
 
             # statistics
-            sampled_num = assessor.get_assessed_num()
-            running_true_r = assessor.get_assessed_rel_num()
+            sampled_num = datamanager.get_assessed_num()
+            running_true_r = datamanager.get_assessed_rel_num()
             running_true_recall = running_true_r / float(total_true_r)
             ap = calculate_ap(did2label, ranked_dids)
 
@@ -117,8 +108,8 @@ def autotar_method(data_name, topic_set, topic_id,
                     stopping = True
 
     # tar run file
-    shown_dids = assessor.get_assessed_dids()
-    check_func = assessor.assess_state_check_func()
+    shown_dids = datamanager.get_assessed_dids()
+    check_func = datamanager.assess_state_check_func()
     tar_run_file = name_tar_run_file(data_name=data_name, model_name=model_name, topic_set=topic_set, exp_id=random_state, topic_id=topic_id)
     with open(tar_run_file, 'w', encoding='utf8') as f:
         write_tar_run_file(f=f, topic_id=topic_id, check_func=check_func, shown_dids=shown_dids)
@@ -127,9 +118,9 @@ def autotar_method(data_name, topic_set, topic_id,
     return
 
 if __name__ == '__main__':
-    data_name = 'clef2017'
-    topic_id = 'CD008081'
-    topic_set = 'test'
+    data_name = 'anttlr4'
+    topic_id = '1'
+    topic_set = 'testando2'
     query_file = os.path.join(PARENT_DIR, 'data', data_name, 'topics', topic_id)
     qrel_file = os.path.join(PARENT_DIR, 'data', data_name, 'qrels', topic_id)
     doc_id_file = os.path.join(PARENT_DIR, 'data', data_name, 'docids', topic_id)
