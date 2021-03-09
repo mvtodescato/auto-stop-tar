@@ -16,10 +16,11 @@ from autostop.tar_framework.utils import *
 
 
 def scal_method(data_name, topic_set, topic_id,
-                query_file, qrel_file, doc_id_file, doc_text_file,  # data parameters
-                stopping_percentage=1.0, stopping_recall=None, target_recall=1.0,  # autostop parameters
-                sub_percentage=0.8, bound_bt=30, max_or_min='min', bucket_type='samplerel', ita=1.05,  # scal parameters
+                query_file, qrel_file, doc_id_file, doc_text_file, sub_percentage, bound_bt, ita,  # data parameters
+                stopping_percentage=1.0, stopping_recall=1.0, target_recall=1.0,  # autostop parameters
+                max_or_min='min', bucket_type='samplerel',  # scal parameters
                 random_state=0):
+    data_name, topic_id, topic_set, query_file, qrel_file, doc_id_file, doc_text_file,sub_percentage,bound_bt,ita
     """
     Implementation of the S-CAL method [1].
 
@@ -210,13 +211,13 @@ def scal_method(data_name, topic_set, topic_id,
 
     return
 
-if __name__ == '__main__':
-    data_name = 'anttlr4'
-    topic_id = '1'
-    topic_set = 'testando2'
+def main(sub_percentage, bound_bt, ita, topic,data):
+    data_name = data
+    topic_id = topic
+    topic_set = data
     query_file = os.path.join(PARENT_DIR, 'data', data_name, 'topics', topic_id)
     qrel_file = os.path.join(PARENT_DIR, 'data', data_name, 'qrels', topic_id)
     doc_id_file = os.path.join(PARENT_DIR, 'data', data_name, 'docids', topic_id)
     doc_text_file = os.path.join(PARENT_DIR, 'data', data_name, 'doctexts', topic_id)
 
-    scal_method(data_name, topic_id, topic_set, query_file, qrel_file, doc_id_file, doc_text_file)
+    scal_method(data_name, topic_id, topic_set, query_file, qrel_file, doc_id_file, doc_text_file,sub_percentage,bound_bt,ita)
