@@ -13,9 +13,9 @@ from autostop.tar_framework.utils import *
 from autostop.tar_model.utils import *
 
 def autostop_method(data_name, topic_set, topic_id,
-                    query_file, qrel_file, doc_id_file, doc_text_file,  # data parameters
-                    sampler_type='HTAPPriorSampler', epsilon=0.5, beta=-0.1,
-                    stopping_percentage=None, stopping_recall=None, target_recall=1.0, stopping_condition='loose', # autostop parameters
+                    query_file, qrel_file, doc_id_file, doc_text_file, target_recall,  # data parameters
+                    sampler_type, stopping_condition, epsilon=0.5, beta=-0.1,
+                    stopping_percentage=None, stopping_recall=1.0,  # autostop parameters
                     random_state=0):
 
     np.random.seed(random_state)
@@ -41,7 +41,6 @@ def autostop_method(data_name, topic_set, topic_id,
     model_name += 'smp' + str(sampler_type) + '-'
 
     if sampler_type == 'HTMixtureUniformSampler':
-        model_name += 'epsilon' + str(epsilon) + '-'
         sampler = HTMixtureUniformSampler()
         sampler.init(complete_dids, complete_labels)
     elif sampler_type == 'HTUniformSampler':
@@ -49,7 +48,6 @@ def autostop_method(data_name, topic_set, topic_id,
         sampler.init(complete_dids, complete_labels)
         sampler.update_distribution()
     elif sampler_type == 'HTPowerLawSampler':
-        model_name += 'beta' + str(beta) + '-'
         sampler = HTPowerLawSampler()
         sampler.init(beta, complete_dids, complete_labels)
         sampler.update_distribution(beta=beta)
@@ -58,11 +56,9 @@ def autostop_method(data_name, topic_set, topic_id,
         sampler.init(complete_dids, complete_labels)
         sampler.update_distribution()
     elif sampler_type == 'HHMixtureUniformSampler':
-        model_name += 'epsilon' + str(epsilon) + '-'
         sampler = HHMixtureUniformSampler()
         sampler.init(total_num, did2label)
     elif sampler_type == 'HHPowerLawSampler':
-        model_name += 'beta' + str(beta) + '-'
         sampler = HHPowerLawSampler()
         sampler.init(total_num, did2label)
         sampler.update_distribution(beta=beta)
@@ -71,6 +67,8 @@ def autostop_method(data_name, topic_set, topic_id,
         sampler.init(total_num, did2label)
         sampler.update_distribution()
     else:
+        print(sampler_type)
+        print(stopping_condition)
         raise TypeError
 
     model_name += 'tr' + str(target_recall) + '-'
@@ -172,9 +170,9 @@ def autostop_method(data_name, topic_set, topic_id,
 
 
 def autostop_for_large_collection(data_name, topic_set, topic_id,
-        query_files, qrel_files, doc_id_files, doc_text_files,  # data parameters
-        sampler_type='HTAPPriorSampler', epsilon=0.5, beta=-0.1,
-        stopping_percentage=None, stopping_recall=None, target_recall=1.0, stopping_condition='strict1', # autostop parameters
+        query_files, qrel_files, doc_id_files, doc_text_files, target_recall,  # data parameters
+        sampler_type, stopping_condition, epsilon=0.5, beta=-0.1,
+        stopping_percentage=None, stopping_recall=None,  # autostop parameters
         random_state=0):
 
     # sampler
@@ -325,13 +323,15 @@ def autostop_for_large_collection(data_name, topic_set, topic_id,
 
     return
 
-if __name__ == '__main__':
-    data_name = 'anttlr4'
-    topic_id = '1'
-    topic_set = 'testando2'
+def main(target_recall, sampler_type, stop_condition,topic,data):
+    data_name = data
+    topic_id = topic
+    topic_set = data
+    print(stop_condition)
+    print(sampler_type)
     query_file = os.path.join(PARENT_DIR, 'data', data_name, 'topics', topic_id)
     qrel_file = os.path.join(PARENT_DIR, 'data', data_name, 'qrels', topic_id)
     doc_id_file = os.path.join(PARENT_DIR, 'data', data_name, 'docids', topic_id)
     doc_text_file = os.path.join(PARENT_DIR, 'data', data_name, 'doctexts', topic_id)
 
-    autostop_method(data_name, topic_id, topic_set, query_file, qrel_file, doc_id_file, doc_text_file)
+    autostop_method(data_name, topic_id, topic_set, query_file, qrel_file, doc_id_file, doc_text_file,target_recall,sampler_type,stop_condition)

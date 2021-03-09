@@ -269,9 +269,6 @@ def knee_method(data_name, topic_set, topic_id,
 
 
 def main(rho,stopping_beta,topic,data):
-    print("ok")
-    # test_detect_knee()
-    print("ok")
     data_name = data
     topic_id = topic
     topic_set = data
@@ -280,7 +277,7 @@ def main(rho,stopping_beta,topic,data):
     doc_id_file = os.path.join(PARENT_DIR, 'data', data_name, 'docids', topic_id)
     doc_text_file = os.path.join(PARENT_DIR, 'data', data_name, 'doctexts', topic_id)
 
-    knee_method(data_name, topic_id, topic_set,query_file, qrel_file, doc_id_file, doc_text_file,rho,stopping_beta)
+    knee_method(data_name, topic_id, topic_set,query_file, qrel_file, doc_id_file, doc_text_file,stopping_beta,rho)
 
 
 #main(rho=10/6,stopping_beta=100,topic='1',data='anttlr4')

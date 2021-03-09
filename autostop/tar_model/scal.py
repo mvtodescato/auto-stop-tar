@@ -221,3 +221,5 @@ def main(sub_percentage, bound_bt, ita, topic,data):
     doc_text_file = os.path.join(PARENT_DIR, 'data', data_name, 'doctexts', topic_id)
 
     scal_method(data_name, topic_id, topic_set, query_file, qrel_file, doc_id_file, doc_text_file,sub_percentage,bound_bt,ita)
+
+#main(1.0,30,1.5,'1','anttlr4')

@@ -34,8 +34,8 @@ def TarEvalResultReader(data_name, model_name, exp_id, train_test, topic_id,zero
         for f in filedirlist:
             print(f)
             print(model_name)
-            if 'rho' + str(beta) in f:
-                if 'sb' + str(rho) in f:
+            if 'rho' + str(rho) in f:
+                if 'sb' + str(beta) in f:
                     md_name = f
                     print("sim")
         
@@ -83,20 +83,21 @@ def TarEvalResultReader(data_name, model_name, exp_id, train_test, topic_id,zero
 
 
 def knee_exec(topic,datas):
-#    for data in datas:
-#        for rho in['dynamic', 10/6, 12/8, 0.01, 5, 8, 10 , 15]:
-#            for beta in[100.0, 1000.0]:
-#                knee.main(rho=rho, stopping_beta=beta,topic=topic,data=data)
+    #for data in datas:
+    #    for rho in['dynamic', 10/6, 12/8, 0.01, 5, 8, 10 , 15]:
+    #        for beta in[100.0, 1000.0]:
+    #            knee.main(rho=rho, stopping_beta=beta,topic=topic,data=data)
     dfs = []
     for data in datas:
         for rho in['dynamic', 10/6, 12/8, 0.01, 5, 8, 10 , 15]:
             for beta in[100.0, 1000.0]:
-                _df = TarEvalResultReader(data_name=data, model_name= 'knee_sb' + str(rho) + '-sp1.0-srNone-rho' + str(beta), exp_id='1', train_test=data, topic_id=topic,zero="0",rho=rho,beta=beta,method_name='knee') #o zero na vdd tem relação com o random state, se ele for 1 o zero tem q ser 1 tbm
+                _df = TarEvalResultReader(data_name=data, model_name= 'knee_sb' + str(beta) + '-sp1.0-srNone-rho' + str(rho)  , exp_id='1', train_test=data, topic_id=topic,zero="0",rho=rho,beta=beta,method_name='knee') #o zero na vdd tem relação com o random state, se ele for 1 o zero tem q ser 1 tbm
+                _df['dta'] = data
                 _df['bound'] = rho
                 _df['beta'] = beta
                 dfs.append(_df)
     df = pd.concat(dfs, ignore_index=True)
-    df = df.groupby(['bound', 'beta']).mean()
+    df = df.groupby(['dta','bound', 'beta']).mean()
 
     df[['cost', 'recall','loss_er']]
     df.to_csv(r'/home/mvtodescato/auto-stop-tar/autostop/tar_model/results_csv/knee_exec.csv')
@@ -104,33 +105,61 @@ def knee_exec(topic,datas):
 
 def scal_exec(topic,datas):
     dfs = []
-    #for data in datas:
-    #    for sub_percentage in [0.8, 1.0]:
-    #        for bound_bt in [30, 50, 70, 90, 110]:
-    #            for ita in [1.0, 1.05]:
-    #                scal.main(sub_percentage, bound_bt, ita, topic,data)
+    for data in datas:
+        for sub_percentage in [0.8, 1.0]:
+            for bound_bt in [30, 50, 70, 90, 110]:
+                for ita in [1.0, 1.05]:
+                    scal.main(sub_percentage, bound_bt, ita, topic,data)
     for data in datas:
         for sub_percentage in [0.8, 1.0]:
             for bound_bt in [30, 50, 70, 90, 110]:
                 for ita in [1.0, 1.05]:
                     _df = TarEvalResultReader(data_name=data, model_name='scal-sp1.0-sr1.0-tr1.0-spt{}-bnd{}-mxnmin-bktsamplerel-ita{}'.format(sub_percentage, bound_bt, ita), exp_id='1', train_test=data, topic_id=topic, zero="0",rho=0,beta=0, method_name='scal')
+                    _df['dta'] = data
                     _df['spt'] = sub_percentage
                     _df['bnd'] = bound_bt
                     _df['ita'] = ita
                     dfs.append(_df)
     df = pd.concat(dfs, ignore_index=True)
-    #df['reliability'] = df.apply(lambda row:1 if row['recall'] >= row['tr'] else 0, axis=1)
-    df = df.groupby(['spt', 'bnd', 'ita']).mean()
+    df = df.groupby(['dta','spt', 'bnd', 'ita']).mean()
     df[['wss_100', 'loss_er', 'norm_area', 'recall', 'cost', 'num_shown', 'num_docs', 'rels_found', 'num_rels', 'ap', 'NCG@10', 'NCG@100']]
     df.to_csv(r'/home/mvtodescato/auto-stop-tar/autostop/tar_model/results_csv/scal_exec.csv')
+    print(df)
+
+def autostop_exec(topic,datas):
+    dfs = []
+    for data in datas:
+        for target_recall in [1.0, 0.9, 0.8]:
+            for sampler_type in ['HTAPPriorSampler','HTUniformSampler','HTPowerLawSampler','HHPowerLawSampler','HHAPPriorSampler']:
+                for stop_condition in ['strict1','loose','strict2']:
+                    auto_stop.main(target_recall, sampler_type, stop_condition, topic, data)
+    for data in datas:
+        for target_recall in [1.0, 0.9, 0.8]:
+            for sampler_type in ['HTAPPriorSampler','HTUniformSampler','HTPowerLawSampler','HHPowerLawSampler','HHAPPriorSampler']:
+                for stop_condition in ['strict1','loose','strict2']:
+                    _df = TarEvalResultReader(data_name=data, model_name='autostop-spNone-sr1.0-smp{}-tr{}-sc{}'.format(sampler_type, target_recall, stop_condition), exp_id='1', train_test=data, topic_id=topic, zero="0",rho=0,beta=0, method_name='autostop')
+                    _df['dta'] = data
+                    _df['smp'] = sampler_type
+                    _df['sc'] = stop_condition
+                    _df['tr'] = target_recall
+                    dfs.append(_df)
+                
+    df = pd.concat(dfs, ignore_index=True)
+    df['reliability'] = df.apply(lambda row:1 if row['recall'] >= row['tr'] else 0, axis=1)
+    df['re'] = np.abs(df['recall'] - df['tr']) / df['tr']
+    df = df.groupby(['dta', 'smp', 'sc', 'tr']).mean()
+    df.to_csv(r'/home/mvtodescato/auto-stop-tar/autostop/tar_model/results_csv/autostop_exec.csv')
     print(df)
 
 import knee
 import tar_eval
 import scal
+import auto_stop
 topic = "1"
-datas = ['anttlr4']
+datas = ['android', 'anttlr4','elasticsearch','neo4j']
 
-#knee_exec(topic=topic, datas=datas)
+knee_exec(topic=topic, datas=datas)
 
 scal_exec(topic=topic, datas=datas)
+
+autostop_exec(topic, datas)
