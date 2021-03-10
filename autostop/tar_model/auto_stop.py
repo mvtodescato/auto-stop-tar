@@ -335,3 +335,5 @@ def main(target_recall, sampler_type, stop_condition,topic,data):
     doc_text_file = os.path.join(PARENT_DIR, 'data', data_name, 'doctexts', topic_id)
 
     autostop_method(data_name, topic_id, topic_set, query_file, qrel_file, doc_id_file, doc_text_file,target_recall,sampler_type,stop_condition)
+
+main(target_recall = 1.0, sampler_type = 'HTAPPriorSampler', stop_condition= 'strict1', topic='1',data='anttlr4')

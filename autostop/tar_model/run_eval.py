@@ -83,17 +83,21 @@ def TarEvalResultReader(data_name, model_name, exp_id, train_test, topic_id,zero
 
 
 def knee_exec(topic,datas):
-    #for data in datas:
-    #    for rho in['dynamic', 10/6, 12/8, 0.01, 5, 8, 10 , 15]:
-    #        for beta in[100.0, 1000.0]:
-    #            knee.main(rho=rho, stopping_beta=beta,topic=topic,data=data)
+    #do 1 ao 10 com 6
+    #testar o rho dinamico e ver o valor que ele gera
+    #deixar o beta apenas em 100
+    #plotar grafico de linha, porcentagem de custo e recall
+    for data in datas:
+        for rho in['dynamic', 10/6, 12/8, 0.01, 5, 8, 10 , 15]:
+            for beta in[100.0, 1000.0]:
+                knee.main(rho=rho, stopping_beta=beta,topic=topic,data=data)
     dfs = []
     for data in datas:
         for rho in['dynamic', 10/6, 12/8, 0.01, 5, 8, 10 , 15]:
             for beta in[100.0, 1000.0]:
                 _df = TarEvalResultReader(data_name=data, model_name= 'knee_sb' + str(beta) + '-sp1.0-srNone-rho' + str(rho)  , exp_id='1', train_test=data, topic_id=topic,zero="0",rho=rho,beta=beta,method_name='knee') #o zero na vdd tem relação com o random state, se ele for 1 o zero tem q ser 1 tbm
                 _df['dta'] = data
-                _df['bound'] = rho
+                _df['rho'] = rho
                 _df['beta'] = beta
                 dfs.append(_df)
     df = pd.concat(dfs, ignore_index=True)
@@ -156,10 +160,10 @@ import tar_eval
 import scal
 import auto_stop
 topic = "1"
-datas = ['android', 'anttlr4','elasticsearch','neo4j']
+datas = ['elasticsearch'] #,'hazelcast','neo4j']
 
-knee_exec(topic=topic, datas=datas)
+knee_exec(topic, datas)
 
-scal_exec(topic=topic, datas=datas)
+scal_exec(topic, datas)
 
 autostop_exec(topic, datas)
